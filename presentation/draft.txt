@@ -1,0 +1,42 @@
+## PhD context:
+- Partnership between IGN, ENS, KYLIA
+- 
+
+## present the science objectives of the PhD:
+ - study the contribution of the fusion of the GNSS, geophysical and geochemical sensors to the study of volcanism, eruption prevention, and 
+ - the proposed method is an instrumental method to the volcanic surveliance in near field which become to complete the existing instruments. simply deployable in crisis time and capable of longtime measurement without any human intervention
+ - The miniaturization of the sensors, 
+
+## Technological objectives:
+ - robistness of codes
+ - take into account the real time aspect
+ - 
+
+## Starting point
+ - PhD Lionel Benoit
+ - Geocube tested in land slide and artica
+ - Prototype industrialized by kylia.
+ - Some code robustness problems.
+ - Don't take into account ionospheric and tropospheric corrections.
+
+## What I did sense the start of PhD (17/01/2016)
+ - Understanding priciples, algorithms 
+ - Developing softwares permiting to extract raw data, ftp, ... working on code de
+ - began working on the post-processing core.. resolved some problems
+ - Working on the robustness of the algoritms (problem with the triple differences convergence) .. proposing a method.
+ - first tests on long baselines with geocubes 15Km. first results... good but we had to take into accoutn that the chosen baseline was parallele to the 
+ - understanding of the different ionospheric sources and robustness of each algorithms.
+ - In partnership
+
+## What I am waiting for the first Etna experience:
+ - have a representable rawdata set.
+ - See the tropospheric effect (denivelé)
+ - How a more dense network could have as results
+
+## What will I do for the 2 next years.
+ - Determining the limits of the ionospheric/tropospheric.
+ - Determining the deployment 
+ - With the help of LOEMI/IGN advices of the INGV chose the right sensors in corcordance with 
+ - study the correlation between different aspect and how we can
+
+## Thank you for your attention

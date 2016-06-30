@@ -34,16 +34,29 @@ function [residuals_navpos,residuals_spp_sbas] = compare_code_baselines(cube1_na
     %  P O N D E R A T I O N  D E  L A  P O S I T I O N  N A V I G U E E  %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     cube1_corrected_navpos = [];
-    cube1_corrected_navpos(1,1) = cube1_navpos(1,1) * ((cube1_navpos(1,4)^2+cube1_navpos(1,5)^2)) * 1/(cube1_navpos(1,4)^2+cube1_navpos(1,5)^2);
-    cube1_corrected_navpos(1,2) = cube1_navpos(1,2) * ((cube1_navpos(1,4)^2+cube1_navpos(1,5)^2)) * 1/(cube1_navpos(1,4)^2+cube1_navpos(1,5)^2);
-    cube1_corrected_navpos(1,3) = cube1_navpos(1,3) * ((cube1_navpos(1,4)^2+cube1_navpos(1,5)^2))* 1/(cube1_navpos(1,4)^2+cube1_navpos(1,5)^2);
-    cube1_corrected_navpos(1,5) = (cube1_navpos(1,4)^2+cube1_navpos(1,5)^2);
     
-    for i = 1:size(cube1_navpos, 1)
-        cube1_corrected_navpos(i,1) = sum(cube1_corrected_navpos(:,1)) + cube1_navpos(i,1) * ((cube1_navpos(i,4)^2+cube1_navpos(i,5)^2));% X
-        cube1_corrected_navpos(i,2) = sum(cube1_corrected_navpos(:,2)) + cube1_navpos(i,2) * ((cube1_navpos(i,4)^2+cube1_navpos(i,5)^2));% Y
-        cube1_corrected_navpos(i,3) = sum(cube1_corrected_navpos(:,3)) + cube1_navpos(i,3) * ((cube1_navpos(i,4)^2+cube1_navpos(i,5)^2));% Z
-        cube1_corrected_navpos(i,4) = sum(cube1_corrected_navpos(:,4)) + (cube1_navpos(i,4)^2 + cube1_navpos(i,5)^2);
+    cube1_navpos_s2(:) = (cube1_navpos(:,4).^2 + cube1_navpos(:,5).^2)/1000000;
+    
+    
+    cube1_corrected_navpos(1,1) = cube1_navpos(1,1); % X tilde
+    cube1_corrected_navpos(1,2) = cube1_navpos(1,2); % Y tilde
+    cube1_corrected_navpos(1,3) = cube1_navpos(1,3); % Z tilde
+    cube1_corrected_navpos(1,4) = 10000; % sigma tilde
+    
+    
+    for i = 2 : size(cube1_navpos,1)
+        if cube1_navpos_s2(i) < 100
+            cube1_corrected_navpos(i, 4) = 1/(1/cube1_corrected_navpos(i-1,4) + 1/cube1_navpos_s2(i));
+            k = cube1_corrected_navpos(i, 4);
+            cube1_corrected_navpos(i, 1) = (cube1_corrected_navpos(i-1, 1)*1/cube1_corrected_navpos(i-1, 4) + cube1_navpos(i,1)*1/cube1_navpos_s2(i)) * k;
+            cube1_corrected_navpos(i, 2) = (cube1_corrected_navpos(i-1, 2)*1/cube1_corrected_navpos(i-1, 4) + cube1_navpos(i,2)*1/cube1_navpos_s2(i)) * k;
+            cube1_corrected_navpos(i, 3) = (cube1_corrected_navpos(i-1, 3)*1/cube1_corrected_navpos(i-1, 4) + cube1_navpos(i,3)*1/cube1_navpos_s2(i)) * k;
+        else
+            cube1_corrected_navpos(i, 1) = cube1_corrected_navpos(i-1, 1);
+            cube1_corrected_navpos(i, 2) = cube1_corrected_navpos(i-1, 2);
+            cube1_corrected_navpos(i, 3) = cube1_corrected_navpos(i-1, 3);
+            cube1_corrected_navpos(i, 4) = cube1_corrected_navpos(i-1, 4);
+        end
     end
     
     
@@ -108,6 +121,12 @@ function [residuals_navpos,residuals_spp_sbas] = compare_code_baselines(cube1_na
     
     subplot(3,1,3)
     plot(cube1_corrected_navpos(:,3),'p')
+    
+    %plot des sigmas de la pondération des positions naviguées
+    figure
+    plot(sqrt(cube1_corrected_navpos(:,4)),'r')
+    
+    
     
 end
 
