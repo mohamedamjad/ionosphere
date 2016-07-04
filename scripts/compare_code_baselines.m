@@ -1,3 +1,4 @@
+% Author: Amjad
 % Comparaison entre les lignes de base calculées à partir 
 % des positions naviguées et à partir du SPP (single point positioning)
 % avec correction des SBAS.
@@ -32,7 +33,9 @@ function [residuals_navpos,residuals_spp_sbas] = compare_code_baselines(cube1_na
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %  P O N D E R A T I O N  D E  L A  P O S I T I O N  N A V I G U E E  %
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %%%%%%%%%%%%%%%%%%%%% pour le geocube fixe %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     cube1_corrected_navpos = [];
     
     cube1_navpos_s2(:) = (cube1_navpos(:,4).^2 + cube1_navpos(:,5).^2)/1000000;
@@ -41,7 +44,7 @@ function [residuals_navpos,residuals_spp_sbas] = compare_code_baselines(cube1_na
     cube1_corrected_navpos(1,1) = cube1_navpos(1,1); % X tilde
     cube1_corrected_navpos(1,2) = cube1_navpos(1,2); % Y tilde
     cube1_corrected_navpos(1,3) = cube1_navpos(1,3); % Z tilde
-    cube1_corrected_navpos(1,4) = 10000; % sigma tilde
+    cube1_corrected_navpos(1,4) = cube1_navpos(1,4)+cube1_navpos(1,5); % sigma tilde
     
     
     for i = 2 : size(cube1_navpos,1)
@@ -59,13 +62,39 @@ function [residuals_navpos,residuals_spp_sbas] = compare_code_baselines(cube1_na
         end
     end
     
-    
+    %%%%%%%%%%%%%%%%%%%%% pour le geocube mobile %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    cube2_corrected_navpos = [];
+
+    cube2_navpos_s2(:) = (cube2_navpos(:,4).^2 + cube2_navpos(:,5).^2)/1000000;
+
+
+    cube2_corrected_navpos(1,1) = cube2_navpos(1,1); % X tilde
+    cube2_corrected_navpos(1,2) = cube2_navpos(1,2); % Y tilde
+    cube2_corrected_navpos(1,3) = cube2_navpos(1,3); % Z tilde
+    cube2_corrected_navpos(1,4) = cube1_navpos(1,4)+cube1_navpos(1,5); % sigma tilde
+
+
+    for i = 2 : size(cube2_navpos,1)
+        if cube2_navpos_s2(i) < 100
+            cube2_corrected_navpos(i, 4) = 1/(1/cube2_corrected_navpos(i-1,4) + 1/cube2_navpos_s2(i));
+            k = cube2_corrected_navpos(i, 4);
+            cube2_corrected_navpos(i, 1) = (cube2_corrected_navpos(i-1, 1)*1/cube2_corrected_navpos(i-1, 4) + cube2_navpos(i,1)*1/cube2_navpos_s2(i)) * k;
+            cube2_corrected_navpos(i, 2) = (cube2_corrected_navpos(i-1, 2)*1/cube2_corrected_navpos(i-1, 4) + cube2_navpos(i,2)*1/cube2_navpos_s2(i)) * k;
+            cube2_corrected_navpos(i, 3) = (cube2_corrected_navpos(i-1, 3)*1/cube2_corrected_navpos(i-1, 4) + cube2_navpos(i,3)*1/cube2_navpos_s2(i)) * k;
+        else
+            cube2_corrected_navpos(i, 1) = cube2_corrected_navpos(i-1, 1);
+            cube2_corrected_navpos(i, 2) = cube2_corrected_navpos(i-1, 2);
+            cube2_corrected_navpos(i, 3) = cube2_corrected_navpos(i-1, 3);
+            cube2_corrected_navpos(i, 4) = cube2_corrected_navpos(i-1, 4);
+        end
+    end
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %                          L E S  P L O T S                           %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     figure
-    plot(residuals_spp_sbas,'b')%,residuals_navpos,'r'
+    plot(residuals_spp_sbas,'b')
     
     title('Différence entre la ligne de base calculée à partir des DD et celles calculées à partir des positions naviguées et positions SPP avec correction SBAS')
     xlabel('epochs')
@@ -110,26 +139,41 @@ function [residuals_navpos,residuals_spp_sbas] = compare_code_baselines(cube1_na
     subplot(3,1,3)
     plot(cube2_navpos(:,3),'r')
     
-    % Plots des positions naviguées pondérées
+    % Plots des positions naviguées pondérées pour le cube fixe
     figure
     title('X Y Z pour la position naviguee KYLIA-12')
     subplot(3,1,1)
-    plot(cube1_corrected_navpos(:,1),'p')
+    plot(cube1_corrected_navpos(:,1)-4212927.32,'p')
     
     subplot(3,1,2)
-    plot(cube1_corrected_navpos(:,2),'p')
+    plot(cube1_corrected_navpos(:,2)-173609.92,'p')
     
     subplot(3,1,3)
-    plot(cube1_corrected_navpos(:,3),'p')
+    plot(cube1_corrected_navpos(:,3)-4769705.36,'p')
     
-    %plot des sigmas de la pondération des positions naviguées
+    % Plot des sigmas de la pondération des positions naviguées
     figure
     plot(sqrt(cube1_corrected_navpos(:,4)),'r')
     
-    
+    % Plot des positions naviguées pondérées pour le cube fixe
+    figure
+    title('X Y Z pour la position naviguee KYLIA-18')
+    subplot(3,1,1)
+    plot(cube2_corrected_navpos(:,1)-4201797.0472,'b')
+
+    subplot(3,1,2)
+    plot(cube2_corrected_navpos(:,2)-177941.0756,'b')
+
+    subplot(3,1,3)
+    plot(cube2_corrected_navpos(:,3)-4779282.1306,'b')
+
+    % plot des sigmas de la pondération des positions naviguées
+    figure
+    plot(sqrt(cube2_corrected_navpos(:,4)),'b')
     
 end
-
+% position du KYLIA_12 4212927.3242    173609.9235   4769705.3600
+% position du KYLIA_18 4201797.0472    177941.0756   4779282.1306
 % remarque du chef: pondéré avec la précision de la position naviguée
 
 % Ce que je peux rajouter: passer un coup de moindres carrés sur la
